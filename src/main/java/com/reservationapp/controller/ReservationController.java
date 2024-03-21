@@ -11,12 +11,17 @@ import com.reservationapp.repository.PassengerRepository;
 import com.reservationapp.repository.RouteRepository;
 import com.reservationapp.repository.SubRouteRepository;
 import com.reservationapp.util.EmailService;
+import com.reservationapp.util.ExcelGeneratorService;
 import com.reservationapp.util.PdfTicketGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -34,6 +39,8 @@ public class ReservationController {
      private SubRouteRepository subRouteRepository;
      @Autowired
      private EmailService emailService;
+     @Autowired
+     private ExcelGeneratorService excelGeneratorService;
 
      //http://localhost:8080/api/reservation?busId=1&routeId=5
 
@@ -95,6 +102,28 @@ public class ReservationController {
 
          return new ResponseEntity<>("Done....", HttpStatus.CREATED);
 
+//http://localhost:8080/api/reservation/passengers/excel
 
      }
+    @GetMapping("/passengers/excel")
+    public ResponseEntity<byte[]> generateExcel(){
+        try {
+            //Assuming you have a method to fetch passengers from database
+            List<Passenger> passengers = fetchPassengersFromDatabase();
+            byte[] excelBytes = excelGeneratorService.generatePassengerExcel(passengers);
+
+            HttpHeaders headers= new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentDispositionFormData("attachment","passenger_data.xlsx");
+            return new ResponseEntity<>(excelBytes,headers,HttpStatus.OK);
+
+        } catch (IOException e) {
+           e.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    private List<Passenger> fetchPassengersFromDatabase() {
+         return passengerRepository.findAll();
+    }
 }

@@ -8,8 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Entity
+@Data
 @Table(name="bus")
 public class  Bus {
         @Id
